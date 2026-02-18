@@ -1,0 +1,20 @@
+{
+    "Name": "PUT DATASET NAME HERE",
+    "BIDSVersion": "v1.8.0",
+    "License": "",
+    "Authors": [
+        "PUT",
+	"AUTHORS",
+	"HERE"
+    ],
+    "Acknowledgments": "",
+    "HowToAcknowledge": "",
+    "Funding": [
+        ""
+    ],
+    "ReferencesAndLinks": [
+        ""
+    ],
+    "DatasetDOI": ""
+}
+

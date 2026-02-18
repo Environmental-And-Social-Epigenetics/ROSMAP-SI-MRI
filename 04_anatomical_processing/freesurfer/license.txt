@@ -1,0 +1,4 @@
+your.email@institution.edu
+00000
+replace_with_freesurfer_license_line_3
+replace_with_freesurfer_license_line_4
