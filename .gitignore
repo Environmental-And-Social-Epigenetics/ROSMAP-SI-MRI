@@ -1,0 +1,16 @@
+*.nii.gz
+*.nii
+*.img
+*.sif
+*.h5
+*.trk
+*.tck
+
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+
+*.log
+*.err
+transfer_batch.txt
+t1t2_ratio_results/

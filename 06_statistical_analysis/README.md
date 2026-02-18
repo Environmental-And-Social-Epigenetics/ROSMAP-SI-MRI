@@ -1,42 +1,47 @@
 # 06 Statistical Analysis
 
-This stage captures analysis notebooks, data wrangling artifacts, and final model result tables used for the social isolation MRI analyses.
+This stage contains notebooks and wrangling files used for the final regression analyses.
 
-## Contents
+## Run Commands
 
-### Modeling Notebooks
+There is no single SLURM launcher in this stage. Typical workflow:
 
-- `notebooks/r_stats.ipynb`
-- `notebooks/r_stats_Mahmoud.ipynb`
-- `notebooks/r_stats_Mahmoud_AllRegions.ipynb`
-- `notebooks/r_stats_Mahmoud_Figures.ipynb`
-- `notebooks/Mahmoud_HemiAveraged_r_stats.ipynb`
-- `notebooks/Steve_Scripts/r_stats.ipynb`
+```bash
+jupyter lab
+```
 
-### Data Wrangling
+Then run notebooks in:
 
-- `data_wrangling/slm_data_wrangle.ipynb`
-- `data_wrangling/slm_add_qc.ipynb`
-- `data_wrangling/site_check.ipynb`
-- `data_wrangling/Count_Patients.ipynb`
-- supporting CSVs (`slm_data*.csv`, `projid_dataframe.csv`)
+- `06_statistical_analysis/data_wrangling/`
+- `06_statistical_analysis/notebooks/`
 
-### Final Results
+## Inputs
 
-- `results/ALFF_Results.csv`
-- `results/Anat_Results.csv`
-- `results/DWI_White_Matter_Results.csv`
-- `results/T1T2Ratio_Results.csv`
+- derivative outputs from stages 03, 04, and 05
+- participant metadata (`metadata/patient_metadata_3t_raw.csv`)
+- intermediate wrangling CSVs in `data_wrangling/`
 
-## Outcome Domains Covered
+## Outputs
 
-- ALFF/fMRI-derived metrics
-- anatomical measures
-- DWI white matter metrics
-- T1/T2 ratio measures
+- updated notebook outputs
+- final model tables in `06_statistical_analysis/results/`
+  - `ALFF_Results.csv`
+  - `Anat_Results.csv`
+  - `DWI_White_Matter_Results.csv`
+  - `T1T2Ratio_Results.csv`
 
-## Important Notes
+## Verification
 
-- Notebook checkpoint files were intentionally excluded.
-- Notebooks preserve the original development state, including historical path references.
-- Some analyses depend on derivative outputs that are not stored in this repository.
+- notebooks execute without cell errors in your environment
+- result CSV files are generated/updated with expected row counts
+- model outputs are consistent with available subjects in derivatives
+
+## SLURM Resources
+
+- Not directly defined for this stage (interactive/local notebook workflow).
+
+## Troubleshooting
+
+- If notebook imports fail, create a dedicated Python/R environment for analysis.
+- If derivative files are missing, verify stages 03-05 completed successfully first.
+- If subject counts mismatch, rerun wrangling notebooks before model notebooks.

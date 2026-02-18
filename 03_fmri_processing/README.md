@@ -1,34 +1,49 @@
 # 03 fMRI Processing (fMRIPrep + XCP-D)
 
-This stage runs fMRIPrep followed by XCP-D for resting-state fMRI preprocessing and denoised derivative generation.
+This stage runs participant-level fMRIPrep and then attempts XCP-D postprocessing.
 
-## Contents
+## Run Command
 
-- `fmriprep_xcp/submit_job_array.sh`: submits fMRI processing across subjects.
-- `fmriprep_xcp/ss_fmriprep_xcp.sh`: participant-level fMRIPrep + XCP-D script.
+```bash
+bash 03_fmri_processing/fmriprep_xcp/submit_job_array.sh
+```
 
-## Pipeline Behavior
+Optional subject subset:
 
-The script workflow is:
+```bash
+bash 03_fmri_processing/fmriprep_xcp/submit_job_array.sh sub-00123456
+```
 
-1. receive BIDS root and subject list from SLURM array launcher
-2. create per-subject scratch workspace
-3. copy participant BIDS files and required root files
-4. optionally pull prior FreeSurfer outputs into scratch for reuse
-5. run fMRIPrep container
-6. run XCP-D container on fMRIPrep outputs
-7. copy resulting derivatives back to the output directory
+## Inputs
 
-## Dependencies/Assumptions
+- BIDS directory at `BIDS_DIR`
+- expected files:
+  - `BIDS_DIR/sub-*/ses-*/func/*bold.nii.gz`
+  - `BIDS_DIR/sub-*/ses-*/anat/*T1w.nii.gz`
+- `FMRIPREP_IMG`, `XCP_IMG`
+- FreeSurfer license at `FREESURFER_LICENSE`
 
-- SLURM array execution
-- Apptainer/Singularity module
-- fMRIPrep and XCP-D container images available at configured paths
-- FreeSurfer license file at BIDS `code/license.txt`
-- TemplateFlow/cache setup
+## Outputs
 
-## Important Notes
+- `${OUTPUT_DIR}/fmriprep_${FMRIPREP_VERSION}/`
+- `${OUTPUT_DIR}/freesurfer_${FREESURFER_VERSION}/` (reuse/continuation)
+- `${OUTPUT_DIR}/xcp_d_${XCP_VERSION}/` (if XCP execution is enabled)
 
-- This directory intentionally keeps only the main script variants (temporary scripts were excluded).
-- Script currently contains hardcoded original cluster paths and versions.
-- Validate output directory and cache paths before rerunning on a new system.
+## Verification
+
+- fMRIPrep subject folders and HTML files appear in `${OUTPUT_DIR}/fmriprep_${FMRIPREP_VERSION}/`.
+- FreeSurfer subject folders appear in `${OUTPUT_DIR}/freesurfer_${FREESURFER_VERSION}/`.
+- If XCP is enabled, outputs appear in `${OUTPUT_DIR}/xcp_d_${XCP_VERSION}/`.
+
+## SLURM Resources (per subject)
+
+- time: `2-00:00:00`
+- memory: `16GB`
+- CPUs: `4`
+- array throttle: `${FMRIPREP_ARRAY_CONCURRENCY}` from `config.sh`
+
+## Troubleshooting
+
+- If fMRIPrep fails at startup, check `FMRIPREP_IMG`, `TEMPLATEFLOW_DIR`, and `CACHE_DIR`.
+- If FreeSurfer reuse fails, verify `${OUTPUT_DIR}/freesurfer_${FREESURFER_VERSION}/` exists and is readable.
+- If no outputs are copied back, inspect subject-level scratch paths and copy commands in logs.

@@ -1,39 +1,62 @@
 # 01 BIDS Construction
 
-This stage contains scripts and reference tables used to construct and clean the BIDS dataset layout before running processing pipelines.
+This stage contains historical Python scripts used to build and repair the BIDS structure before MRI processing.
 
-## Contents
+## Run Command
 
-- `scripts/`: Python scripts for copy, organize, rename, and metadata repair.
-- `reference_csvs/`: lookup and location tables used by scripts.
-- `example_bids_structure/`: JSON-only example of a BIDS subject/session tree.
+There is no single launcher script for this stage. Run scripts manually in sequence, for example:
 
-## Key Scripts
+```bash
+python 01_bids_construction/scripts/Copy_Files.py
+python 01_bids_construction/scripts/Organize.py
+python 01_bids_construction/scripts/Rename2.py
+python 01_bids_construction/scripts/MetaAddition.py
+python 01_bids_construction/scripts/Correct_Fmap-HARDI_Meta.py
+python 01_bids_construction/scripts/EPI_Corrections.py
+python 01_bids_construction/scripts/Bold_DWI_PEDs.py
+```
 
-- `Copy_Files.py`: copies raw subject directories into a new reformatted root.
-- `Organize.py`: creates modality subfolders (`anat`, `dwi`, `func`, `fmap`) and moves files.
-- `Rename.py`, `Rename2.py`, `DebugRename.py`, `Rename_Move_Met_New.py`: apply BIDS naming conventions and corrections.
-- `MetaAddition.py`, `Correct_Fmap-HARDI_Meta.py`, `EPI_Corrections.py`, `Bold_DWI_PEDs.py`: add or correct metadata in JSON sidecars.
-- `FMAP_less_subjects.py`, `Move_FMAP_less.py`: identify and separate subjects missing fieldmaps.
-- `move_T2.py`, `Rem_Extras.py`: additional cleanup/placement scripts.
+## Recommended Execution Order
 
-## Reference Tables
+1. `Copy_Files.py`
+2. `Organize.py`
+3. `Rename2.py` (or `Rename.py` + correction scripts)
+4. `MetaAddition.py`
+5. `Correct_Fmap-HARDI_Meta.py`
+6. `EPI_Corrections.py`
+7. `Bold_DWI_PEDs.py`
+8. `FMAP_less_subjects.py` and `Move_FMAP_less.py` (if missing fieldmaps need handling)
+9. cleanup/fixes: `move_T2.py`, `Rem_Extras.py`, `DebugRename.py`, `Rename_Move_Met_New.py`
 
-- `reference_csvs/OG_Locations.csv`: source raw locations by subject/session.
-- `reference_csvs/Openmind_Directoris.csv`: mapped destination locations used by multiple scripts.
-- `reference_csvs/fmap_less.csv`: subjects detected with missing fieldmaps.
+## Inputs
 
-## Example BIDS Structure
+- `reference_csvs/OG_Locations.csv`
+- `reference_csvs/Openmind_Directoris.csv`
+- source raw MRI directories referenced by those CSVs
 
-`example_bids_structure/` includes:
+## Outputs
 
-- `dataset_description.json`
-- one subject/session with JSON sidecars for `anat`, `dwi`, `fmap`, and `func`
+- BIDS-like tree under your target BIDS root:
+  - `sub-*/ses-*/anat/*`
+  - `sub-*/ses-*/dwi/*`
+  - `sub-*/ses-*/func/*`
+  - `sub-*/ses-*/fmap/*` (when available)
+- updated sidecar JSON metadata
+- optional missing-fieldmap tracking table (`fmap_less.csv`)
 
-This is included as a lightweight structural example without NIfTI data.
+## Verification
 
-## Important Notes
+- Confirm every subject/session has expected modality subfolders.
+- Confirm expected BIDS filenames exist in each modality folder.
+- Spot-check JSON sidecars for key fields (`IntendedFor`, `PhaseEncodingDirection`, echo/readout values).
+- Validate folder structure against `example_bids_structure/`.
 
-- Most scripts use hardcoded absolute paths from the original cluster environment.
-- Script order matters; these were historically run as iterative cleanup passes.
-- Review each script before rerunning and parameterize paths for a new environment.
+## SLURM Resources
+
+- Not applicable in this stage (manual/local Python scripts).
+
+## Troubleshooting
+
+- If files are not found, verify CSV paths and mounted source storage.
+- If metadata fields are missing, rerun metadata scripts after rename/folder corrections.
+- If scripts fail due to absolute paths, update paths inside scripts or adapt wrappers before rerun.

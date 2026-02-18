@@ -1,18 +1,26 @@
 #!/bin/bash
-subjs=($@)
-base=/om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted/ # PUT YOUR BIDS DIRECTORY HERE
+set -euo pipefail
 
-# Get subject names from the directory
-if [[ $# -eq 0 ]]; then
-    pushd $base
-    subjs=($(ls sub-* -d))
-    popd
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+source "${REPO_ROOT}/config.sh"
+
+bids_dir="${BIDS_DIR}"
+subjs=("$@")
+
+if [[ ${#subjs[@]} -eq 0 ]]; then
+    pushd "${bids_dir}" >/dev/null
+    subjs=($(ls -d sub-*))
+    popd >/dev/null
 fi
 
-# take the length of the array
-# this will be useful for indexing later
-len=$(expr ${#subjs[@]} - 1) # len - 1
+if [[ ${#subjs[@]} -eq 0 ]]; then
+    echo "No subjects found in ${bids_dir}"
+    exit 1
+fi
 
-echo Spawning ${#subjs[@]} sub-jobs.
+len=$(( ${#subjs[@]} - 1 ))
+echo "Spawning ${#subjs[@]} sub-jobs."
 
-sbatch --array=0-$len%100 $base/code/freesurfer/ss_freesurfer.sh $base ${subjs[@]}
+sbatch --array=0-"${len}"%"${FREESURFER_ARRAY_CONCURRENCY}" \
+    "${SCRIPT_DIR}/ss_freesurfer.sh" "${bids_dir}" "${subjs[@]}"

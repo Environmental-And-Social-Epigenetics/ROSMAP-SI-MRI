@@ -1,18 +1,26 @@
 #!/bin/bash
-subjs=($@) # You can input a list of subjects if you want to
-code_dir=`dirname $0` # Get the directory of this file
-sub_dir=/om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted/ # BIDS ROOT DIRECTORY
+set -euo pipefail
 
-if [[ $# -eq 0 ]]; then
-    # first go to data directory, grab all subjects,
-    # and assign to an array
-    pushd $sub_dir/derivatives/freesurfer_7.4.1/
-    subjs=($(ls sub-* -d))
-    popd
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+source "${REPO_ROOT}/config.sh"
+
+bids_dir="${BIDS_DIR}"
+subjs=("$@")
+
+if [[ ${#subjs[@]} -eq 0 ]]; then
+    pushd "${OUTPUT_DIR}/freesurfer_${FREESURFER_VERSION}/" >/dev/null
+    subjs=($(ls -d sub-*))
+    popd >/dev/null
 fi
 
-len=$(expr ${#subjs[@]} - 1) # len - 1
+if [[ ${#subjs[@]} -eq 0 ]]; then
+    echo "No subjects found in ${OUTPUT_DIR}/freesurfer_${FREESURFER_VERSION}/"
+    exit 1
+fi
 
+len=$(( ${#subjs[@]} - 1 ))
 echo "Spawning ${#subjs[@]} sub-jobs."
 
-sbatch --array=0-$len%120 $code_dir/ss_fs_tabulate.sh $sub_dir ${subjs[@]}
+sbatch --array=0-"${len}"%"${FS_TABULATE_ARRAY_CONCURRENCY}" \
+    "${SCRIPT_DIR}/ss_fs_tabulate.sh" "${bids_dir}" "${subjs[@]}"

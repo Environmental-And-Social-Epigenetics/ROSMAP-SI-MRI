@@ -9,7 +9,22 @@ This repository reorganizes and documents the workflow originally developed in:
 Only scripts, configuration files, notebooks, and lightweight tabular metadata were copied.
 Raw/derivative imaging data were intentionally not copied.
 
-## Pipeline Overview
+## Quick Start
+
+1. Clone repository.
+2. Edit [`config.sh`](config.sh) once for your environment.
+3. Follow the end-to-end runbook in [`GUIDE.md`](GUIDE.md).
+4. Launch stages in order with the stage submit scripts.
+
+## Prerequisites (Summary)
+
+- SLURM + Apptainer/Singularity environment
+- required container images present (`MRIQC`, `fMRIPrep`, `XCP-D`, `FreeSurfer`, `QSIPrep`, `neuromaps`)
+- valid FreeSurfer license path
+- BIDS dataset path configured
+- optional: MRtrix conda env for stage 07 and Globus CLI for stage 08
+
+## Pipeline Dependency/Ordering Overview
 
 ```mermaid
 flowchart TD
@@ -29,14 +44,14 @@ flowchart TD
 
 ## Repository Layout
 
-- `01_bids_construction`: scripts and reference files used to build and repair BIDS structure.
-- `02_quality_control`: MRIQC SLURM pipeline scripts and model config.
-- `03_fmri_processing`: fMRIPrep + XCP-D SLURM pipeline scripts.
-- `04_anatomical_processing`: FreeSurfer and FreeSurfer tabulation workflow.
-- `05_dwi_processing`: QSIPrep + QSIRecon scripts and reconstruction spec.
-- `06_statistical_analysis`: notebooks, wrangling files, and final model result CSVs.
-- `07_postprocessing`: T1/T2-ratio tract-level extraction scripts.
-- `08_data_transfer`: Globus transfer script to move BIDS dataset to Engaging.
+- [`01_bids_construction`](01_bids_construction/README.md): scripts and reference files used to build and repair BIDS structure.
+- [`02_quality_control`](02_quality_control/README.md): MRIQC SLURM pipeline scripts and model config.
+- [`03_fmri_processing`](03_fmri_processing/README.md): fMRIPrep + XCP-D SLURM pipeline scripts.
+- [`04_anatomical_processing`](04_anatomical_processing/README.md): FreeSurfer and FreeSurfer tabulation workflow.
+- [`05_dwi_processing`](05_dwi_processing/README.md): QSIPrep + QSIRecon scripts and reconstruction spec.
+- [`06_statistical_analysis`](06_statistical_analysis/README.md): notebooks, wrangling files, and final model result CSVs.
+- [`07_postprocessing`](07_postprocessing/README.md): T1/T2-ratio tract-level extraction scripts.
+- [`08_data_transfer`](08_data_transfer/README.md): Globus transfer script to move BIDS dataset to Engaging.
 - `metadata`: participant-level metadata table used in downstream modeling.
 
 ## Copied From Original Project
@@ -56,11 +71,11 @@ Excluded:
 - Notebook checkpoint folders
 - Internal `.git` / `.datalad` metadata from copied tool subdirectories
 
-## Notes On Reproducibility
+## Reproducibility Notes
 
-- Many scripts include hardcoded absolute cluster paths from the original environment.
-- Most processing scripts assume SLURM scheduling plus Apptainer/Singularity containers.
-- This repo preserves historical scripts first; parameterization and modern env packaging are possible next steps.
+- Runtime configuration is centralized in [`config.sh`](config.sh).
+- Most heavy processing stages assume SLURM scheduling and Apptainer/Singularity.
+- Stage 01 scripts are historical/manual and may still require path edits based on source data location.
 
 ## Stage Documentation
 
@@ -71,3 +86,5 @@ Each stage has its own README with:
 - expected inputs/outputs
 - run patterns on cluster
 - caveats specific to that stage
+
+For full command-by-command execution and validation checks, use [`GUIDE.md`](GUIDE.md).

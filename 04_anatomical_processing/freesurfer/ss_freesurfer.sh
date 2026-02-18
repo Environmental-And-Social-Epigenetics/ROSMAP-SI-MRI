@@ -6,32 +6,35 @@
 
 set -eu # Stop on errors
 umask 000
-##### CHANGE THESE VARIABLES AS NEEDED ######
-version=7.4.1
-IMG=/om2/user/smeisler/freesurfer_${version}.img
-module add openmind8/apptainer/1.1.7
-#############################################
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+source "${REPO_ROOT}/config.sh"
+
+version="${FREESURFER_VERSION}"
+IMG="${FREESURFER_IMG}"
+module add "${APPTAINER_MODULE}"
 
 # Import arguments from job submission script
 args=($@)
 subjs=(${args[@]:1})
-bids_dir=$1
+bids_dir=${1:-${BIDS_DIR}}
 
 # index slurm array to grab subject
 subject=${subjs[${SLURM_ARRAY_TASK_ID}]}
 
 # Define scratch directory
-scratch=/om2/scratch/tmp/$(whoami)/mri_proc/$subject # assign working directory
+scratch=${SCRATCH_DIR}/$subject
 export APPTAINERENV_SUBJECTS_DIR=$scratch/data/derivatives/freesurfer/
 
 mkdir -p ${scratch}/fs_files
 mkdir -p ${scratch}/data/derivatives/freesurfer/
 
 # assign output directory
-output_dir=${bids_dir}/derivatives/freesurfer_${version}
+output_dir=${OUTPUT_DIR}/freesurfer_${version}
 
 # Copy license and fsaverage to scratch directory
-license=$bids_dir/code/license.txt
+license="${FREESURFER_LICENSE}"
 cp -n $license $scratch/
 fsaverage_path=${output_dir}/fsaverage/
 cp -nr $fsaverage_path ${scratch}/data/derivatives/freesurfer/

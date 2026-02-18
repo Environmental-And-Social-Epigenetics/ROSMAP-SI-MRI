@@ -37,7 +37,7 @@
 #module load openmind8/apptainer/1.1.7
 #module load mit/matlab/2023a
 #module load openmind/freesurfer/6.0.0
-license=/om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted/code/license.txt
+license=${FREESURFER_LICENSE:-/path/to/freesurfer/license.txt}
 ###
 
 set -e -u -x

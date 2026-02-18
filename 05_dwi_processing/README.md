@@ -1,37 +1,48 @@
 # 05 DWI Processing (QSIPrep + QSIRecon)
 
-This stage runs diffusion preprocessing and reconstruction/tracking using QSIPrep/QSIRecon.
+This stage runs diffusion preprocessing with QSIPrep and reconstruction/tracking with QSIRecon.
 
-## Contents
+## Run Command
 
-- `qsiprep/submit_job_array.sh`: SLURM array launcher.
-- `qsiprep/ss_qsiprep.sh`: participant-level run script.
-- `qsiprep/recon_spec.json`: reconstruction specification (DSI Studio GQI + AutoTrack pipeline).
+```bash
+bash 05_dwi_processing/qsiprep/submit_job_array.sh
+```
 
-## Pipeline Behavior
+Optional subject subset:
 
-`ss_qsiprep.sh` performs:
+```bash
+bash 05_dwi_processing/qsiprep/submit_job_array.sh sub-00123456
+```
 
-1. participant-level scratch setup and input copying
-2. optional reuse of FreeSurfer outputs
-3. QSIPrep preprocessing
-4. QSIRecon reconstruction based on `recon_spec.json`
-5. copying of `qsiprep_*` and `qsirecon_*` outputs back to derivatives
+## Inputs
 
-The reconstruction spec includes:
+- `BIDS_DIR/sub-*/ses-*/dwi/*dwi.nii.gz`
+- corresponding `.bval`, `.bvec`, and sidecar JSON files
+- `QSIPREP_IMG`
+- recon specification file at `QSIPREP_RECON_SPEC`
+- optional FreeSurfer outputs under `${OUTPUT_DIR}/freesurfer_${FREESURFER_VERSION}/`
 
-- GQI reconstruction
-- scalar export
-- AutoTrack tractography with predefined bundle groups
+## Outputs
 
-## Dependencies/Assumptions
+- `${OUTPUT_DIR}/qsiprep_${QSIPREP_VERSION}/sub-*`
+- `${OUTPUT_DIR}/qsirecon_${QSIPREP_VERSION}/sub-*`
+- subject HTML reports in both output trees
 
-- SLURM + Apptainer/Singularity
-- QSIPrep container available in configured location
-- FreeSurfer license and derivatives available when requested
+## Verification
 
-## Important Notes
+- Subject folders and HTML files are created in both qsiprep and qsirecon outputs.
+- SLURM logs show successful completion of singularity run command.
+- Tract/reconstruction derivatives exist for expected subjects.
 
-- Only the current scripts/spec were copied; archived and temporary variants were intentionally excluded.
-- Script includes explicit path cleanup logic tied to prior versioned derivative directories.
-- Validate flags (`--ignore fieldmaps`, `--use_syn_sdc`) for your desired rerun policy.
+## SLURM Resources (per subject)
+
+- time: `2-00:00:00`
+- memory: `16GB`
+- CPUs: `8`
+- array throttle: `${QSIPREP_ARRAY_CONCURRENCY}`
+
+## Troubleshooting
+
+- If jobs fail before launch, verify `QSIPREP_IMG`, `CACHE_DIR`, and `QSIPREP_RECON_SPEC`.
+- If FreeSurfer-based reconstruction fails, confirm `${OUTPUT_DIR}/freesurfer_${FREESURFER_VERSION}/sub-*` exists.
+- If cleanup deletes wrong outputs, leave `QSIPREP_PREVIOUS_VERSION_TO_CLEAN` empty in `config.sh`.

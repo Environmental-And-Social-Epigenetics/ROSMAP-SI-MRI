@@ -9,38 +9,39 @@ mem_gb="15"
 nprocs="4"
 omp_nprocs="4"
 umask 000
-##### CHANGE THESE VARIABLES AS NEEDED ######
-fmriprep_version=23.2.0a3
-freesurfer_version=7.4.1
-xcp_version=0.6.0
-path_to_imgs=/om2/user/smeisler/
-fmriprep_IMG=${path_to_imgs}/fmriprep_${fmriprep_version}.img
-xcp_IMG=${path_to_imgs}/xcp_d_${xcp_version}.img
-module add openmind8/apptainer/1.1.7
-templateflow_dir="/om2/user/smeisler/.cache/templateflow/"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+source "${REPO_ROOT}/config.sh"
+
+fmriprep_version="${FMRIPREP_VERSION}"
+freesurfer_version="${FREESURFER_VERSION}"
+xcp_version="${XCP_VERSION}"
+fmriprep_IMG="${FMRIPREP_IMG}"
+xcp_IMG="${XCP_IMG}"
+module add "${APPTAINER_MODULE}"
+templateflow_dir="${TEMPLATEFLOW_DIR}"
 export APPTAINERENV_TEMPLATEFLOW_HOME=$templateflow_dir
-cache_dir=/om2/user/smeisler/.cache
-#############################################
+cache_dir="${CACHE_DIR}"
 
 set -eu # Code will stop on errors
 
 # Import arguments from job submission script
 args=($@)
 subjs=(${args[@]:1})
-bids_dir=$1
-fs_license=$bids_dir/code/license.txt
+bids_dir=${1:-${BIDS_DIR}}
+fs_license="${FREESURFER_LICENSE}"
 
 # index slurm array to grab subject
 subject=${subjs[${SLURM_ARRAY_TASK_ID}]}
 
 # Define scratch directory
-scratch=/om2/scratch/tmp/$(whoami)/mri_proc/$subject/ # assign working directory
+scratch=${SCRATCH_DIR}/$subject
 mkdir -p ${scratch}/data/derivatives/fmriprep/
 mkdir -p ${scratch}/data/derivatives/freesurfer/
 
 # assign output directory
-#output_dir=${bids_dir}/derivatives/
-output_dir=/om2/scratch/tmp/mabdel03/Ravi_Mabdel_MRI/derivatives/
+output_dir=${OUTPUT_DIR}
 
 # Copy data to scratch
 cp -n $bids_dir/*.json ${scratch}/data/

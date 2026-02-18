@@ -2,14 +2,18 @@
 #SBATCH -n 256
 #SBATCH -t 24:00:00
 #SBATCH --mem=500G
-#SBATCH --output=/om2/user/mabdel03/files/Ravi_ISO_MRI/Reprocessing/T1T2Ratio/ForcepsMinor/Scripts/t1t2ratio.log
-#SBATCH --error=/om2/user/mabdel03/files/Ravi_ISO_MRI/Reprocessing/T1T2Ratio/ForcepsMinor/Scripts/t1t2_ratio_%A_%a.err
+#SBATCH --output=t1t2ratio_%A_%a.log
+#SBATCH --error=t1t2_ratio_%A_%a.err
 #SBATCH --mail-type=START,END,FAIL
 #SBATCH --mail-user=mabdel03@mit.edu
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+source "${REPO_ROOT}/config.sh"
+
 # Activate conda environment
-source /om2/user/mabdel03/anaconda/etc/profile.d/conda.sh
-conda activate /om2/user/mabdel03/conda_envs/MRtrix
+source "${CONDA_SH_PATH}"
+conda activate "${MRTRIX_CONDA_ENV}"
 
 # Check if MRtrix is available after activation
 if ! command -v tcksample &> /dev/null; then
@@ -18,8 +22,8 @@ if ! command -v tcksample &> /dev/null; then
 fi
 
 # Base directories
-XCP_DIR="/om/scratch/Wed/mabdel03/MRI_Data/derivatives/Set_2/xcp_d_0.6.1"
-QSIRECON_DIR="/om/scratch/Wed/mabdel03/MRI_Data/derivatives/Set_2/qsirecon_0.20.0"
+XCP_DIR="${XCP_DERIV_DIR}"
+QSIRECON_DIR="${QSIRECON_DERIV_DIR}"
 
 # Count total subjects for array size
 NUM_SUBJECTS=$(ls -d "$XCP_DIR"/sub-* | wc -l)
@@ -29,7 +33,7 @@ NUM_SUBJECTS=$((NUM_SUBJECTS - 1))
 #SBATCH --array=0-${NUM_SUBJECTS}%100  # Allow up to 100 concurrent jobs given the large resource allocation
 
 # Output directory for results
-OUTPUT_DIR="t1t2_ratio_results"
+OUTPUT_DIR="${T1T2_OUTPUT_DIR}"
 mkdir -p "$OUTPUT_DIR"
 
 # Create summary file if this is the first job in the array

@@ -1,23 +1,39 @@
 # 08 Data Transfer (Engaging Cluster)
 
-This stage stores transfer automation used to copy BIDS subject directories from OM to the Engaging cluster via Globus.
+This stage contains the Globus-based transfer script used to copy BIDS subject folders to Engaging.
 
-## Contents
+## Run Command
 
-- `Transfer_BIDS.sh`
+```bash
+bash 08_data_transfer/Transfer_BIDS.sh
+```
 
-## Workflow Summary
+## Inputs
 
-The script:
+- source BIDS directory configured inside script (`SOURCE_DIR`)
+- source and destination endpoint IDs
+- Globus CLI authentication
 
-1. activates a conda environment with Globus CLI
-2. defines source and destination endpoint UUIDs
-3. enumerates subject directories (`sub-*`) in a source BIDS root
-4. builds a batch transfer file
-5. submits a recursive Globus transfer request
+## Outputs
 
-## Important Notes
+- `transfer_batch.txt` file in the execution directory
+- submitted Globus transfer task for all `sub-*` folders
 
-- Endpoint IDs and source/destination paths are hardcoded to the original project.
-- Requires valid Globus authentication context at runtime.
-- Verify destination directory policy and quota before bulk transfer.
+## Verification
+
+- confirm task was submitted successfully in script output
+- run `globus task list` and `globus task show <task_id>`
+- confirm destination has expected `sub-*` directory set
+
+## SLURM Resources (from script)
+
+- time: `47:00:00`
+- memory: `128G`
+- cores: `32`
+- GPU request included (`--gres=gpu:a100:1`)
+
+## Troubleshooting
+
+- If auth fails, run `globus login` in the same environment.
+- If transfer is denied, verify endpoint permissions and destination path access.
+- If you are using a different project, update endpoint IDs and source/destination paths before running.

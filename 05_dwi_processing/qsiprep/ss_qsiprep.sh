@@ -9,8 +9,13 @@
 mem_mb="15500"
 cpus="8"
 omp_cpus="8"
-cache_dir=/om2/user/smeisler/.cache
-module add openmind8/apptainer/1.1.7
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+source "${REPO_ROOT}/config.sh"
+
+cache_dir="${CACHE_DIR}"
+module add "${APPTAINER_MODULE}"
 set -eu # Code will stop on errors
 umask 000
 args=($@)
@@ -18,23 +23,21 @@ subjs=(${args[@]:1}) # Get subject names from array
 # index slurm array to grab subject
 subject=${subjs[${SLURM_ARRAY_TASK_ID}]}
 
-qsiprep_version="0.20.0"
-fs_version="7.4.1" # Freesurfer version
-# Confirm your singularity image matches this naming convention
-qsiprep_img=/om2/user/smeisler/qsiprep_${qsiprep_version}.img 
+qsiprep_version="${QSIPREP_VERSION}"
+fs_version="${FREESURFER_VERSION}"
+qsiprep_img="${QSIPREP_IMG}"
 
 # assign working directory
 # MAKE SURE THIS FOLDER WILL NOT BE WIPED WHILE YOU ARE PROCESSING
-scratch=/om2/scratch/tmp/$(whoami)/mri_proc/${subject}
+scratch=${SCRATCH_DIR}/${subject}
 mkdir -p ${scratch}/data/derivatives/freesurfer
 mkdir -p ${scratch}/data/code
 
 # assign BIDS directory
-bids_dir=$1
+bids_dir=${1:-${BIDS_DIR}}
 
 # assign output directory
-output_dir=${bids_dir}/derivatives/
-#output_dir=/om2/scratch/tmp/mabdel03/Ravi_Mabdel_MRI/derivatives/
+output_dir=${OUTPUT_DIR}
 qsiprep_outdir=${output_dir}/qsiprep_${qsiprep_version}
 qsirecon_outdir=${output_dir}/qsirecon_${qsiprep_version}
 
@@ -44,11 +47,11 @@ cp -n $bids_dir/*.tsv ${scratch}/data/
 cp -n $bids_dir/README ${scratch}/data/
 cp -n $bids_dir/.bidsignore ${scratch}/data/
 cp -nr $bids_dir/$subject/ ${scratch}/data/
-fs_license=${bids_dir}/code/license.txt
+fs_license="${FREESURFER_LICENSE}"
 cp -n $fs_license $scratch/license.txt
 
 # Copy Recon Spec to Scratch
-recon_spec=$bids_dir/code/qsiprep/recon_spec.json
+recon_spec="${QSIPREP_RECON_SPEC}"
 cp -f $recon_spec ${scratch}/recon_spec.json
 
 # if FS outputs already exist, move them to scratch
@@ -58,7 +61,7 @@ fi
 
 # Run QSIPrep
 if [ ! -e $qsirecon_outdir/${subject}.html ]; then
-cmd="singularity run --containall -e -B ${scratch},${cache_dir} ${qsiprep_img} $scratch/data $scratch/data/derivatives participant --participant_label ${subject:4} -w $scratch --fs-license-file ${scratch}/data/code/license.txt --unringing_method rpg --output-resolution 1.25 --recon-spec ${scratch}/recon_spec.json --freesurfer-input ${scratch}/data/derivatives/freesurfer/ --fs-license-file $scratch/license.txt --skip-odf-reports --notrack --mem-mb $mem_mb --nthreads $cpus --omp-nthreads $omp_cpus --ignore fieldmaps --use_syn_sdc --force_syn"
+cmd="singularity run --containall -e -B ${scratch},${cache_dir} ${qsiprep_img} $scratch/data $scratch/data/derivatives participant --participant_label ${subject:4} -w $scratch --unringing_method rpg --output-resolution 1.25 --recon-spec ${scratch}/recon_spec.json --freesurfer-input ${scratch}/data/derivatives/freesurfer/ --fs-license-file $scratch/license.txt --skip-odf-reports --notrack --mem-mb $mem_mb --nthreads $cpus --omp-nthreads $omp_cpus --ignore fieldmaps --use_syn_sdc --force_syn"
 echo "Submitted job for: ${subject}"
 echo $'Command :\n'${cmd}
 ${cmd}
@@ -74,10 +77,12 @@ mkdir -p $qsirecon_outdir
 cp -rn $scratch/data/derivatives/qsirecon/$subject $qsirecon_outdir/
 cp -n $scratch/data/derivatives/qsirecon/${subject}.html $qsirecon_outdir/
 
-# REMOVE OLD OUTPUTS
-rm -rf /om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted/derivatives/qsiprep_0.19.1/${subject}/
-rm -rf /om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted/derivatives/qsirecon_0.19.1/${subject}/
-rm -f /om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted/derivatives/qsiprep_0.19.1/${subject}.html
-rm -f /om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted/derivatives/qsirecon_0.19.1/${subject}.html
+# REMOVE OLD OUTPUTS (optional)
+if [[ -n "${QSIPREP_PREVIOUS_VERSION_TO_CLEAN}" ]]; then
+rm -rf ${output_dir}/qsiprep_${QSIPREP_PREVIOUS_VERSION_TO_CLEAN}/${subject}/
+rm -rf ${output_dir}/qsirecon_${QSIPREP_PREVIOUS_VERSION_TO_CLEAN}/${subject}/
+rm -f ${output_dir}/qsiprep_${QSIPREP_PREVIOUS_VERSION_TO_CLEAN}/${subject}.html
+rm -f ${output_dir}/qsirecon_${QSIPREP_PREVIOUS_VERSION_TO_CLEAN}/${subject}.html
+fi
 
 fi

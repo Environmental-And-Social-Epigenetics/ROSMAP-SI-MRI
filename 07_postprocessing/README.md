@@ -1,28 +1,54 @@
 # 07 Postprocessing (T1/T2 Ratio Along Tracts)
 
-This stage contains scripts used to compute mean T1/T2 ratio values sampled along selected white matter tracts.
+This stage extracts tract-level T1/T2 mean values from XCP and QSIRecon derivatives.
 
-## Contents
+## Run Commands
 
-- `t1t2_ratio/Pull_T1T2_ForcepsMinor.sh`
-- `t1t2_ratio/Pull_T1T2_ForcepsMinor_NoParallel.sh`
+Serial/cohort loop:
 
-## Workflow Summary
+```bash
+bash 07_postprocessing/t1t2_ratio/Pull_T1T2_ForcepsMinor_NoParallel.sh
+```
 
-These scripts:
+Array-style script (submit with explicit array when needed):
 
-1. load MRtrix tooling from a configured conda environment
-2. locate subject/session-level T1/T2-ratio NIfTI images and tract `.tck` files
-3. use MRtrix sampling/statistics commands to extract tract-level summary values
-4. write per-subject CSV outputs and aggregate summary CSV
+```bash
+sbatch --array=0-99 07_postprocessing/t1t2_ratio/Pull_T1T2_ForcepsMinor.sh
+```
 
-## Parallel vs Non-Parallel
+## Inputs
 
-- `Pull_T1T2_ForcepsMinor.sh`: SLURM array-oriented parallel strategy.
-- `Pull_T1T2_ForcepsMinor_NoParallel.sh`: single-job serial/loop version.
+- `XCP_DERIV_DIR` from `config.sh`
+- `QSIRECON_DERIV_DIR` from `config.sh`
+- MRtrix available in `MRTRIX_CONDA_ENV`
 
-## Important Notes
+## Outputs
 
-- Scripts use hardcoded input directories from a specific derivative layout.
-- Resource requests are high in the parallel script; tune for your scheduler limits.
-- Confirm MRtrix command availability after environment activation.
+- `${T1T2_OUTPUT_DIR}/sub-*_ses-*_t1t2_stats.csv`
+- `${T1T2_OUTPUT_DIR}/t1t2_ratio_summary.csv`
+
+## Verification
+
+- Per-subject CSVs exist in `${T1T2_OUTPUT_DIR}`.
+- Summary CSV contains subject/session rows and non-empty mean values.
+- SLURM logs show `tcksample` success.
+
+## SLURM Resources
+
+### `Pull_T1T2_ForcepsMinor.sh`
+
+- time: `24:00:00`
+- memory: `500G`
+- cores: `256`
+
+### `Pull_T1T2_ForcepsMinor_NoParallel.sh`
+
+- time: `47:00:00`
+- memory: `256G`
+- cores: `64`
+
+## Troubleshooting
+
+- If `tcksample` is missing, check `CONDA_SH_PATH` and `MRTRIX_CONDA_ENV`.
+- If files are not found, verify `XCP_DERIV_DIR` and `QSIRECON_DERIV_DIR`.
+- If summary file has missing values, inspect per-subject CSV generation and awk parsing.

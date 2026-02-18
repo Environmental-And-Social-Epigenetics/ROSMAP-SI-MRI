@@ -7,16 +7,20 @@
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mabdel03@mit.edu
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+source "${REPO_ROOT}/config.sh"
+
 # Activate conda environment
-source /om2/user/mabdel03/anaconda/etc/profile.d/conda.sh
-conda activate /om2/user/mabdel03/conda_envs/MRtrix
+source "${CONDA_SH_PATH}"
+conda activate "${MRTRIX_CONDA_ENV}"
 
 # Base directories
-XCP_DIR="/om/scratch/Wed/mabdel03/MRI_Data/derivatives/Set_2/xcp_d_0.6.1"
-QSIRECON_DIR="/om/scratch/Wed/mabdel03/MRI_Data/derivatives/Set_2/qsirecon_0.20.0"
+XCP_DIR="${XCP_DERIV_DIR}"
+QSIRECON_DIR="${QSIRECON_DERIV_DIR}"
 
 # Output directory for results
-OUTPUT_DIR="t1t2_ratio_results"
+OUTPUT_DIR="${T1T2_OUTPUT_DIR}"
 mkdir -p "$OUTPUT_DIR"
 
 # Create summary file
