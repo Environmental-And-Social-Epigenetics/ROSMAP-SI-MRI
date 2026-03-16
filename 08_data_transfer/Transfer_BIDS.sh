@@ -6,14 +6,18 @@
 #SBATCH --mail-user=mabdel03@mit.edu
 #SBATCH --mail-type=BEGIN,END,FAIL
 
-source /om2/user/mabdel03/anaconda/etc/profile.d/conda.sh
-conda activate /om2/user/mabdel03/conda_envs/globus_env
+# Source central config
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${REPO_ROOT}/config.sh"
 
-SOURCE_ENDPOINT="cbc6f8da-d37e-11eb-bde9-5111456017d9"
-DEST_ENDPOINT="c52fcff2-761c-11eb-8cfc-cd623f92e1c0"
+source "${CONDA_SH_PATH}"
+conda activate globus_env
 
-SOURCE_DIR="/om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted"
-DEST_DIR="/pool001/mabdel03/BIDS_MRI_Data"
+SOURCE_ENDPOINT="${TRANSFER_SOURCE_ENDPOINT}"
+DEST_ENDPOINT="${TRANSFER_DEST_ENDPOINT}"
+
+SOURCE_DIR="${TRANSFER_SOURCE_DIR}"
+DEST_DIR="${TRANSFER_DEST_DIR}"
 
 # Define batch file
 BATCH_FILE="transfer_batch.txt"

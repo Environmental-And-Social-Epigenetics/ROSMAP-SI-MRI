@@ -1,6 +1,7 @@
-import pandas as pd 
+import pandas as pd
 import os
 import shutil
+from pipeline_config import cfg
 
 suffixes = {
 	'dwi': {'DTI.bval', 'DTI.bvec', 'DTI.json', 'DTI.nii.gz', 
@@ -20,7 +21,7 @@ suffixes = {
 	'gre_field_mapping_e2_ph.nii.gz', 'gre_field_mapping_merged.nii.gz'}
 }
 
-locations = pd.read_csv('/om2/user/mabdel03/files/Ravi_ISO_MRI/Reference_CSVs/Openmind_Directoris.csv')
+locations = pd.read_csv(cfg.OPENMIND_DIRECTORIES_CSV)
 
 for row in locations.index:
 	cur = locations['Mabdel03_Locations'][row]

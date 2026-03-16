@@ -3,12 +3,13 @@ Script to correct epi fmap files
 Add PhaseEncodingDirection and TotalReadoutTime fields to epi json
 """
 
-import pandas as pd 
+import pandas as pd
 import os
 import shutil
 import json
+from pipeline_config import cfg
 
-locations = pd.read_csv('/om2/user/mabdel03/files/Ravi_ISO_MRI/Reference_CSVs/Openmind_Directoris.csv', dtype=str)
+locations = pd.read_csv(cfg.OPENMIND_DIRECTORIES_CSV, dtype=str)
 
 readouts = {
 	'120221': 0.04, 

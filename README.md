@@ -4,7 +4,7 @@ Consolidated MRI pipeline repository for the ROSMAP Social Isolation project.
 
 This repository reorganizes and documents the workflow originally developed in:
 
-- `/om2/user/mabdel03/files/Ravi_ISO_MRI`
+- `/om2/user/mabdel03/files/Ravi_ISO_MRI` (Openmind, now migrated to Engaging at `$RAVI_MRI_ROOT` — see `config.sh`)
 
 Only scripts, configuration files, notebooks, and lightweight tabular metadata were copied.
 Raw/derivative imaging data were intentionally not copied.

@@ -3,12 +3,13 @@ Code to make metadata additions to FieldMap/HARDI renamed files
 Need to add EchoTime1 and EchoTime2 as well as correct IntendedFor
 """
 
-import pandas as pd 
+import pandas as pd
 import os
 import shutil
 import json
+from pipeline_config import cfg
 
-locations = pd.read_csv('/om2/user/mabdel03/files/Ravi_ISO_MRI/Reference_CSVs/Openmind_Directoris.csv', dtype=str)
+locations = pd.read_csv(cfg.OPENMIND_DIRECTORIES_CSV, dtype=str)
 
 for row in locations.index:
 

@@ -5,12 +5,13 @@ Seems like all of the directions are A>>P, Aka Anterior-Posterior
 This is like the AP fmaps, the phaseencodingdirection should be 'j-'
 """
 
-import pandas as pd 
+import pandas as pd
 import os
 import shutil
 import json
+from pipeline_config import cfg
 
-locations = pd.read_csv('/om2/user/mabdel03/files/Ravi_ISO_MRI/Reference_CSVs/Openmind_Directoris.csv', dtype=str)
+locations = pd.read_csv(cfg.OPENMIND_DIRECTORIES_CSV, dtype=str)
 
 dwi_directs = {
 	'120221': 'AP',

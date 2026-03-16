@@ -1,10 +1,11 @@
 import os
-import pandas as pd 
+import pandas as pd
 import shutil
+from pipeline_config import cfg
 
-df = pd.read_csv("/om2/user/mabdel03/files/Ravi_ISO_MRI/Reference_CSVs/OG_Locations.csv", dtype=str)
+df = pd.read_csv(cfg.OG_LOCATIONS_CSV, dtype=str)
 
-dest = '/om2/user/mabdel03/files/Ravi_ISO_MRI/reformatted'
+dest = cfg.REFORMATTED_DIR
 
 target_folders = []
 
@@ -17,4 +18,4 @@ for row in df.index:
 
 df['New_Directories'] = target_folders
 
-write_csv('/om2/user/mabdel03/files/Ravi_ISO_MRI/Reference_CSVs/New_Locations.csv')
+df.to_csv(os.path.join(cfg.REFERENCE_CSV_DIR, 'New_Locations.csv'))

@@ -2,12 +2,13 @@
 Move patients with no fmaps to new directory
 """
 
-import pandas as pd 
+import pandas as pd
 import os
 import shutil
 import json
+from pipeline_config import cfg
 
-locations = pd.read_csv('/om2/user/mabdel03/files/Ravi_ISO_MRI/Reference_CSVs/fmap_less.csv', dtype=str)
+locations = pd.read_csv(cfg.FMAP_LESS_CSV, dtype=str)
 
 no_fmap_patients = []
 directory = []
@@ -28,6 +29,6 @@ for row in locations.index:
 			 continue
 		new_dir += str(y)+'/'
 
-	shutil.move(new_dir, '/om2/user/mabdel03/files/Ravi_ISO_MRI/No_FMAPS'+'/'+sub)
+	shutil.move(new_dir, cfg.NO_FMAPS_DIR+'/'+sub)
 
 
